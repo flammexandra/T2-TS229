@@ -29,14 +29,14 @@ for j=1:27
     end
 end
 
-
 figure;
-affiche_carte(REF_LON,REF_LAT);
+affiche_carte(REF_LON, REF_LAT);
 hold on;
-plot(lon_point,lat_point, 'b.-');
+plot(lon_point, lat_point, 'b.', 'MarkerSize', 15); 
 xlabel('Longitude en degrés');
 ylabel('Latitude en degrés');
 title('Trajectoire de l''avion');
+
 
 
 
