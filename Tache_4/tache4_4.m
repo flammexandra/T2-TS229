@@ -1,15 +1,23 @@
+%% RQ
+%décalage en fréquence car l'avion bouge et la différence de matériel entre recepteur et avion
+%
+
+
 %% SALLMONE Armela & MONY Alexandra
 clear; % Efface les variables de l environnement de travail
 close all; % Ferme les figures ouvertes
 clc; % Efface la console
 
 %% Initialisation des paramètres
-Fe = 20e4; % Fréquence d'échantillonnage
+Fe = 20e6; % Fréquence d'échantillonnage
 Te=1/Fe; % Période d'échantillonnage
-Ts=1/1e4; % Période d'émission des symboles
+Ts=1/1e6; % Période d'émission des symboles
 Fse=Ts/Te; % Facteur de sur-échantillonnage
 Ns = 5*256; % Nombre de symboles à émettre par paquet
 Nfft = 256; 
+
+%Préambule
+Sp=[ones(1,Fse/2),zeros(1,Fse/2),ones(1,Fse/2),zeros(1,2*Fse),ones(1,Fse/2),zeros(1,Fse/2),ones(1,Fse/2),zeros(1,3*Fse)];
 
 %Filtres de mise en forme
 p=[-1/2*ones(1,Fse/2),1/2*ones(1,Fse/2)];
@@ -17,45 +25,61 @@ p=[-1/2*ones(1,Fse/2),1/2*ones(1,Fse/2)];
 % p1=ones(1,Fse/2);
 len_p=length(p);
 
-
-p_a=fliplr(p); % Filtre adapté
+% Filtre adapté
+p_a=fliplr(p); 
 
 
 %% Émetteur
-%séquence émise:
+% %séquence émise:
 Bk= randi([0 1],1,Ns); % Génération aléatoire des bits
 len_Bk=length(Bk);
 
 % Filtre de mise en forme
-S_l=zeros(1,len_Bk*len_p);
+Sl=zeros(1,len_Bk*len_p);
 
 for i=0:len_Bk-1
-    S_l((len_p*i+1):(len_p*(i+1)))=(1-2*Bk(i+1))*p;
-    
+    Sl((len_p*i+1):(len_p*(i+1)))=(1-2*Bk(i+1))*p;
+
 end
 
-S_l=0.5+S_l;
+%Ajout Préambule
+Sl=[Sp, 0.5+Sl];
 
-%% Récepteur
-% Filtre de reception
-R_l=conv(S_l,p_a);
+%Estimation du délai de propagation : δt
+delta_t = randi([0, 100])* Te;
+
+% Modélisation d'un Dirac pour décaler Sl
+dirac=zeros(1,100);
+dirac(floor(delta_t/Te)+1)=1;
+
+% Décalage temporel de Sl
+Sl_shifted = conv(Sl,dirac);
 
 
-% Échantillonnage au rythme Ts
-R_m=zeros(1,len_Bk);
-indices = 0:len_Bk-1;
-R_m(indices+1) = R_l(indices*Fse+length(p));
+% Estimation du décalage en fréquence : δf
+delta_f = randi([-1,1]) * 1000; 
+
+
+% Générer le signal exp(-j2πδf t)
+t = (0:length(Sl_shifted)-1) * Te;
+exp_signal = exp(-1j * 2 * pi * delta_f * t );%!!
+
+
+Y_l=Sl_shifted.*exp_signal + 0.001*(randn(size(Sl_shifted)) + 1j*randn(size(Sl_shifted))) ; 
+
+%% Recepteur
+Rl=abs(Y_l).^2;
+
+%Estimation de delta t prime
+ 
+delta_t_chap=synchronisation1(Rl,Sp,Fse,Te);
 
 %% Affichage 
-figure;
-semilogy(freq,DSP_periodogramme, 'r');
-hold on;
-semilogy(freq,DSP_th, 'b');
 
-% Titre et légendes
-title('Comparaison de la DSP théorique et de la DSP par mon periodogramme de Welch');
-xlabel('fréquence');
-ylabel("Densité spectrale de puissance");
-legend('DSP periodogramme', 'DSP théorique');
-grid on;
+if delta_t==delta_t_chap
+    disp("δt estimé = δt aléatoire")
+end
+
+fprintf("δt estimé : %d \n", delta_t_chap)
+fprintf("δt aléatoire : %d\n" ,delta_t)
 
