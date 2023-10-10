@@ -10,7 +10,7 @@ Fe=4e6;
 REF_LON = -0.606629; % Longitude de l'ENSEIRB-Matmeca
 REF_LAT = 44.806884; % Latitude de l'ENSEIRB-Matmeca
 
-% trame ADS_B
+%Trame ADS_B
 load('adsb_msgs.mat');
 
 M = size(adsb_msgs,2); % 27 car le la matrice a 27 colonnes 
@@ -28,6 +28,7 @@ for j=1:27
         
     end
 end
+
 
 figure;
 affiche_carte(REF_LON,REF_LAT);
