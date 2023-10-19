@@ -1,3 +1,8 @@
+*.mat
+*.tex
+*.doc 
+*.pdf
+
 # Windows default autosave extension
 *.asv
 
@@ -20,6 +25,8 @@ sccprj/
 
 # Matlab code generation folders
 codegen/
+
+Codes_prof/
 
 # Simulink autosave extension
 *.autosave

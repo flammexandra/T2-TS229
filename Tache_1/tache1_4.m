@@ -4,9 +4,9 @@ close all; % Ferme les figures ouvertes
 clc; % Efface la console
 
 %% Initialisation des paramètres
-fe = 20e4; % Fréquence d'échantillonnage
-Te=1/fe; % Période d'échantillonnage
-Ts=1/1e4; % Période d'émission des symboles
+Fe = 20e6; % Fréquence d'échantillonnage
+Te=1/Fe; % Période d'échantillonnage
+Ts=1/1e6; % Période d'émission des symboles
 Fse=Ts/Te; % Facteur de sur-échantillonnage
 Ns = 1000; % Nombre de symboles à émettre par paquet
 Nfft = 64; 
