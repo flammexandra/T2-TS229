@@ -71,8 +71,8 @@ Y_l=Sl_shifted.*exp_signal + 0.001*(randn(size(Sl_shifted)) + 1j*randn(size(Sl_s
 Rl=abs(Y_l).^2;
 
 %Estimation de delta t prime
- 
-delta_t_chap=synchronisation1(Rl,Sp,Fse,Te);
+delta_t_chap=synchronisation(Rl,Sp,Fse,Te);
+delta_t_chap2=synchronisation_i(Rl,Sp,Fse,Te);
 
 %% Affichage 
 
@@ -81,5 +81,8 @@ if delta_t==delta_t_chap
 end
 
 fprintf("δt estimé : %d \n", delta_t_chap)
+fprintf("δt estimé : %d \n", delta_t_chap2)
 fprintf("δt aléatoire : %d\n" ,delta_t)
+
+
 

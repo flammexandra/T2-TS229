@@ -85,6 +85,7 @@ for i = 1:length(eb_n0)
 
 
         % Estimation de delta t prime
+        
             % Calcul de rho delta t prime
         num=conv(Rl,flip(Sp));
         den1=sqrt(sum(abs(Sp).^2));

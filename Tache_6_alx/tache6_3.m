@@ -13,26 +13,25 @@ REF_LAT = 44.806884; % Latitude de l'ENSEIRB-Matmeca
 P = [1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 0 0 0 0 0 0 1 0 0 1 ]; 
 
 affiche_carte(REF_LON,REF_LAT);
-load('/Users/alex/Desktop/Enseirb/T2/TS229/Tache_6_alx/bk_tilde.mat')
 
-vect = Bk_tilde;
-registre=bit2registre_me(vect');
-if registre.type > 5
-    hold on;
-    plot(registre.longitude, registre.latitude, 'ob');
-end
+lastlongitude=0;
+lastlatitude=0;
 
 for i=1:27
     vect = adsb_msgs.adsb_msgs(:,i);
-    registre=bit2registre_me(vect');
-    disp(registre.type);
+    registre=bit2registre(vect');
     if registre.type > 5
+        lastlongitude=registre.longitude;
+        lastlatitude=registre.latitude;
         hold on;
-        plot(registre.longitude, registre.latitude, 'ob');
+        plot(registre.longitude, registre.latitude, 'b.', 'MarkerSize', 15);
+    end
+    if registre.type > 0 && registre.type < 5
+        text(lastlongitude, lastlatitude, registre.nom, 'Color', 'blue', 'FontWeight', 'bold', 'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom');
     end
 end
 
 
-%
+
 
 

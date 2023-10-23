@@ -1,12 +1,3 @@
-%% ATTENTION
-%0,5 est aussi transmis !!!!!
-
-%E=sum(S_l.^2)
-%E/(Eb/N0)*Fse=sigma^2
-
-%Écart observé provient du 0,5.
-
-
 %% SALLMONE Armela & MONY Alexandra
 
 clear; % Efface les variables de l environnement de travail
@@ -60,7 +51,7 @@ for i = 1:length(eb_n0)
             
         end
         
-        S_l=0.5+S_l;
+        S_l=S_l;
         E=mean(abs(S_l).^2);
         sigma2=E*Fse/eb_n0(i);
         %% Canal
