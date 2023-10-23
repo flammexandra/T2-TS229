@@ -1,6 +1,6 @@
 %% Mony Alexandra , SALLMONE Armela
 
-clear ; % Efface les variables de l   environnement de travail
+clear ; % Efface les variables de l'environnement de travail
 close all ; % Ferme les figures ouvertes
 clc ; % Efface la console
 
@@ -8,7 +8,6 @@ clc ; % Efface la console
 
 N = 2; % 0 ou 1
 Nb = 88; 
-% Polynome générateur
 P = [1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 0 0 0 0 0 0 1 0 0 1 ]; 
 taille_P = length(P);
 

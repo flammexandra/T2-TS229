@@ -2,6 +2,8 @@ function [nom] = nom_avion(bit)
 nom = "";   
 for i=1:6:43
     nombre = bin2dec(num2str(flip(bit(i:i+5))));
+    % j'ai utilisé flip car en comparant avec les résultats du prof je
+    % trouvais pas le meme nom
     if nombre==32
         caractere="A";
     elseif nombre==16

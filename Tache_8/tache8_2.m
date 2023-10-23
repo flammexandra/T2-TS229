@@ -71,7 +71,7 @@ for i=1:9
             disp(registre.latitude);
             if registre.type > 5
                 hold on;
-                plot(registre.longitude, registre.latitude, 'bo');
+                plot(registre.longitude, registre.latitude, 'bo', 'MarkerSize', 10);
             end
         end
     end

@@ -42,6 +42,7 @@ DSP_periodogramme=Mon_Welch(S_l,Nfft,Fe)';
 DSP_th=pwelch(S_l,ones(1,256),0,256,Fe,"centered");
 freq=1:Fe:Fe*Nfft;
 
+
 %% Affichage 
 figure;
 semilogy(freq,DSP_periodogramme, 'r');

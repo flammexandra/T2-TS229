@@ -1,19 +1,23 @@
 %% SALLMONE Armela & MONY Alexandra
+
 clear; % Efface les variables de l environnement de travail
 close all; % Ferme les figures ouvertes
 clc; % Efface la console
 
 %% Tâche 6
 
-P = [1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 0 0 0 0 0 0 1 0 0 1];
-Fe=4e6;
-REF_LON = -0.606629; % Longitude de l'ENSEIRB-Matmeca
-REF_LAT = 44.806884; % Latitude de l'ENSEIRB-Matmeca
 
-%Trame ADS_B
+P = [1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 0 0 0 0 0 0 1 0 0 1];
+
+%Longitude de l'ENSEIRB-Matmeca
+REF_LON = -0.606629; 
+%Latitude de l'ENSEIRB-Matmeca
+REF_LAT = 44.806884;
+
+% Trame ADS_B
 load('adsb_msgs.mat');
 
-M = size(adsb_msgs,2); % 27 car le la matrice a 27 colonnes 
+M = size(adsb_msgs,2); % 27 car la matrice a 27 colonnes 
 
 for i=1:M
     la_trame(i) = bit2registre(adsb_msgs(:,i)'); 
@@ -36,20 +40,3 @@ plot(lon_point, lat_point, 'b.', 'MarkerSize', 15);
 xlabel('Longitude en degrés');
 ylabel('Latitude en degrés');
 title('Trajectoire de l''avion');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

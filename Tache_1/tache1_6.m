@@ -8,14 +8,17 @@
 
 
 %% SALLMONE Armela & MONY Alexandra
+
 clear; % Efface les variables de l environnement de travail
 close all; % Ferme les figures ouvertes
 clc; % Efface la console
 
+
 %% Initialisation des paramètres
-fe = 20e4; % Fréquence d'échantillonnage
-Te=1/fe; % Période d'échantillonnage
-Ts=1/1e4; % Période d'émission des symboles
+
+Fe = 20e6; % Fréquence d'échantillonnage
+Te=1/Fe; % Période d'échantillonnage
+Ts=1/1e6; % Période d'émission des symboles
 Fse=Ts/Te; % Facteur de sur-échantillonnage
 Ns = 1000; % Nombre de symboles à émettre par paquet
 Nfft = 256; 
@@ -57,7 +60,7 @@ for i = 1:length(eb_n0)
             
         end
         
-        S_l = 0,5 + S_l;
+        S_l=0.5+S_l;
         E=mean(abs(S_l).^2);
         sigma2=E*Fse/eb_n0(i);
         %% Canal
@@ -75,11 +78,9 @@ for i = 1:length(eb_n0)
         R_m(indices+1) = R_l(indices*Fse+length(p));
  
         % Association Symbole->Bits
-        
         Bk_tilde=(real(R_m)<0);
         
         % Calcul du TEB
-        
         error=sum(Bk(:) ~= Bk_tilde(:));
         error_cnt = error_cnt+error;  % incrémenter le compteur d'erreurs
         bit_cnt = bit_cnt + Ns;% incrémenter le compteur de bits envoyés

@@ -1,4 +1,4 @@
-function [nom] = nom_avion_bis(bit)
+function [nom] = nom_avion(bit)
 nom = "";
 for i=1:6:43
     int_lettre=bin2dec(flip(bit(i:i+3)));

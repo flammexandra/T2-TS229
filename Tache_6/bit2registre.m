@@ -58,8 +58,8 @@ function registre =  bit2registre(vecteur)
         
     %Message d'identification 
     elseif ((registre.type >0) && (registre.type <5)) 
-            nom_d_avion = nom(vecteur(41:88));
-            registre.nom = nom_d_avion;
+            nom = nom_avion(vecteur(41:88));
+            registre.nom = nom;
        
     end
 end
