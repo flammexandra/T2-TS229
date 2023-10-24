@@ -1,4 +1,4 @@
-function [registre] = bit2registre_me(vect)
+function [registre] = bit2registre(vect)
 registre = struct('adresse',[],'format',[],'type',[],'nom',[],'altitude',[],'timeFlag',[],'cprFlag',[],'latitude',[],'longitude',[]);
 
 REF_LON = -0.606629; % Longitude de l'ENSEIRB-Matmeca
@@ -31,42 +31,14 @@ donnee=vect(33:89);
 format_type_code=bin2dec(regexprep(num2str(donnee(1:5)),'[^\w'']',''));
 registre.type=format_type_code;
 
-
 %Surface Position
 
 if format_type_code > 0 && format_type_code < 5
 
     bits=donnee(9:56);
-
-    % Initialisez un tableau pour stocker les caractères ASCII résultants
-    nom = char(zeros(1, 8));
-    
-    % Parcourez les bits par groupe de 6
-    for i = 1:6:48
-        % Extrait un groupe de 6 bits
-        groupe_bits = bits(i:i+5);
-        
-        % Convertissez le groupe de bits en nombre décimal
-        nombre_decimal = bin2dec(num2str(groupe_bits));
-        disp(nombre_decimal);
-        
-        % Ajoutez 64 pour obtenir la valeur ASCII correspondante
-        if i==1 || i==7 || i==14
-            ascii_value = nombre_decimal + 64;
-        else 
-            ascii_value = nombre_decimal;
-        end
-    
-        
-        % Convertissez la valeur ASCII en caractère
-        caractere = char(ascii_value);
-        
-        % Stockez le caractère dans le tableau résultant
-        nom((i+5)/6) = caractere;
-    end
-    
+    nom=nom_avion(bits);
     registre.nom=nom;
-    disp(nom);
+    
 end
 
 

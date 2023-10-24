@@ -4,7 +4,7 @@ for i=1:6:42
     sous_sequence = flip(bit(i:i+5));
     binary_string = char(flip(sous_sequence(1:4)) + '0');
     int_lettre = bin2dec(binary_string);
-    lettre='a';
+    lettre='';
 
 
     if ((sous_sequence(5)==0)&&(sous_sequence(6)==0))

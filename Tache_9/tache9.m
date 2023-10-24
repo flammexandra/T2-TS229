@@ -4,17 +4,36 @@ close all; % Ferme les figures ouvertes
 clc; % Efface la console
 
 
+%% ADSB Application
+%% Initialisation
+addpath('Client', 'General', 'MAC', 'PHY');
 
-%% Initialisation des paramètres
-Fse=4; % Facteur de sur-échantillonnage
-Fe = 20e6; % Fréquence d'échantillonnage
-Te=1/Fe; % Période d'échantillonnage
-Ns=112;
-buffers=load('buffers.mat');
+%% Constants definition
+DISPLAY_MASK = '| %12.12s | %10.10s | %6.6s | %3.3s | %6.6s | %3.3s | %8.8s | %11.11s | %4.4s | %12.12s | %12.12s | %3.3s |\n'; % Format pour l'affichage
+CHAR_LINE = '+--------------+------------+--------+-----+--------+-----+----------+-------------+------+--------------+--------------+-----+\n'; % Lignes
+
+SERVER_ADDRESS = 'rpprojets.enseirb-matmeca.fr';
+
+% Coordonnees de reference (endroit de l'antenne)
 REF_LON = -0.606629; % Longitude de l'ENSEIRB-Matmeca
 REF_LAT = 44.806884; % Latitude de l'ENSEIRB-Matmeca
-seuilDetection=0.75;
 
+affiche_carte(REF_LON, REF_LAT);
+
+%% Couche Physique
+Fe = 4e6; % Frequence d'echantillonnage (imposee par le serveur)
+Te=1/Fe; % Période d'échantillonnage
+Rb = 1e6;% Debit binaire (=debit symbole)
+Fse = floor(Fe/Rb); % Nombre d'echantillons par symboles
+seuil_detection = 0.75; % Seuil pour la detection des trames (entre 0 et 1)
+Ns=112;
+
+%% Affichage d'une entete en console
+fprintf(CHAR_LINE)
+fprintf(DISPLAY_MASK,'     n      ',' t (in s) ','Corr.', 'DF', '  AA  ','FTC','   CS   ','ALT (in ft)','CPRF','LON (in deg)','LAT (in deg)','CRC')
+fprintf(CHAR_LINE)
+
+%% Paramètres chaine de communication
 %Préambule
 Sp=[ones(1,Fse/2),zeros(1,Fse/2),ones(1,Fse/2),zeros(1,2*Fse),ones(1,Fse/2),zeros(1,Fse/2),ones(1,Fse/2),zeros(1,3*Fse)];
 
@@ -27,24 +46,23 @@ len_p=length(p);
 % Filtre adapté
 p_a=fliplr(p); 
 
-affiche_carte(REF_LON,REF_LAT);
-
-
 lastlongitude=0;
 lastlatitude=0;
 
-
-%% Traitement du signal
-
-for i=1:9
-    
-    Y_l=(buffers.buffers(:,i))';
+%% Boucle principale
+listOfPlanes = [];
+n = 1;
+while true
+    cprintf('blue',CHAR_LINE)
+    cplxBuffer = get_buffer(SERVER_ADDRESS);
+        
+    Y_l=(cplxBuffer)';
     
     %% Recepteur
     Rl=abs(Y_l).^2;
     
     %Estimation de delta t prime
-    delta_t_chap=synchronisation(Rl,Sp,Fse,seuilDetection);
+    delta_t_chap=synchronisation(Rl,Sp,Fse,seuil_detection);
 
     for j=1:length(delta_t_chap)
   
@@ -65,7 +83,6 @@ for i=1:9
     
             Bk_tilde=(real(V_m)<0);    
             registre=bit2registre(Bk_tilde);
-            disp(registre.nom);
 
             if ~isempty(registre.type) && registre.type > 5
                 lastlongitude=registre.longitude;
@@ -75,8 +92,10 @@ for i=1:9
             end
             if ~isempty(registre.type) && registre.type > 0 && registre.type < 5
                 disp(registre.nom);
+                text(lastlongitude, lastlatitude, registre.nom, 'Color', 'blue', 'FontWeight', 'bold', 'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom');
+
 
             end
         end
-    end
-end
+    end    
+end   
