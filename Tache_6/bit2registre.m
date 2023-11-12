@@ -1,104 +1,120 @@
-function registre =  bit2registre(vecteur)
-    
-    P = [1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 0 0 0 0 0 0 1 0 0 1];
+function [registre] = bit2registre(vect)
+registre = struct('adresse',[],'format',[],'type',[],'nom',[],'altitude',[],'timeFlag',[],'cprFlag',[],'latitude',[],'longitude',[]);
 
-    %Initialisation d'un registre vide 
-    registre = struct('adresse',[],'format',[],'type',[],'nom',[], 'altitude',[],'timeFlag',[],'cprFlag',[],'latitude',[],'longitude',[]);
+REF_LON = -0.606629; % Longitude de l'ENSEIRB-Matmeca
+REF_LAT = 44.806884; % Latitude de l'ENSEIRB-Matmeca
 
-    % Vérifions qu'il y a pas d'erreur : CRC
-    [error] = decodeCRC(P,vecteur);
-    if error == 1
-        disp('CRC: il y a une erreur');
-        return 
-    end
+P = [1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 0 0 0 0 0 0 1 0 0 1 ]; 
 
-    % Vérifions que c'est bien une trame ADS : df =17
-    format = bin2dec(num2str(vecteur(1:5)));
-    if format ~= 17
-        disp('cest pas une trame ADS');
-        return
-    end
-    registre.format = format;
-        
-    %L'adresse OASCI de l'appareil:
-    adresse = "0x";
-    for i=9:4:32
-        adresse = strcat(adresse,dec2hex(bin2dec(num2str(vecteur(i:i+3)))));
-    end
-    registre.adresse = adresse ; 
-
-        
-    %FTC : format type code 
-    registre.type = bin2dec(num2str(vecteur(33:37)));
-
-
-    %Message : Position de vol
-    if ((registre.type>8 && registre.type<19) || (registre.type>19 && registre.type<23))
-
-            %UTC
-            utc = vecteur(53);
-            registre.timeFlag= utc;
-
-            %CPR 
-            CPR = vecteur(54);
-            registre.cprFlag = CPR;
-
-            %Altitude 
-            r1=vecteur(41:47);
-            r2=vecteur(49:52);
-            bin_msg =[r1 r2];
-            r_a = bin2dec(num2str(bin_msg));
-            altitude = 25*r_a - 1000;
-            registre.altitude = altitude;
-
-            %Latitude et longitude
-            registre.latitude = latitude(vecteur(55:71),CPR) ;
-            registre.longitude = longitude(vecteur(72:88),CPR,registre.latitude);
-     
-        
-    %Message d'identification 
-    elseif ((registre.type >0) && (registre.type <5)) 
-            nom = nom_avion(vecteur(41:88));
-            registre.nom = nom;
-       
-    end
+if decodeCRC(P,vect)
+    return;
 end
-    
 
+%Format de la voie descendante
+format=bin2dec(num2str(vect(1:5)));
+if format ~=17
+    return;
+end
+
+
+registre.format=format;
+
+% Adresse OACI de l'appareil
+adresse=dec2hex(bin2dec(regexprep(num2str(vect(9:32)),'[^\w'']','')));
+registre.adresse=adresse;
+
+
+% Données ADS-B
+donnee=vect(33:89);
+
+%Format Type Code
+format_type_code=bin2dec(regexprep(num2str(donnee(1:5)),'[^\w'']',''));
+registre.type=format_type_code;
+
+%Surface Position
+
+if format_type_code > 0 && format_type_code < 5
+
+    bits=donnee(9:56);
+    nom=nom_avion(bits);
+    registre.nom=nom;
+    
+end
+
+
+if format_type_code > 4 && format_type_code < 9
+    registre.timeFlag=bin2dec(regexprep(num2str(donnee(21)),'[^\w'']',''));
+    registre.cprFlag=bin2dec(regexprep(num2str(donnee(22)),'[^\w'']',''));
+    
+        %Décodage de la latitude
+    LAT=bin2dec(num2str(donnee(23:39)));
+     
+    D_lat=360/(4*15-registre.cprFlag);
+    
+    j=floor(REF_LAT/D_lat)+floor(1/2+(REF_LAT-D_lat*floor(REF_LAT/D_lat))/D_lat-LAT/power(2,17));
    
+    latitude=D_lat*(j+LAT/power(2,17));
+    
+    
+    registre.latitude=latitude;
 
+        %Décodage de la longitude
+    LON=bin2dec(num2str(donnee(40:56)));
    
+    N_l=cprNL(latitude);
+    %N_l=floor(360*power(acos(1-(1-cos(pi/(2*15)))/power(cos((pi/180)*abs(latitude)),2)),-1));
+    if N_l-registre.cprFlag==0
+        D_lon=360;
+    else 
+        D_lon=360/(N_l-registre.cprFlag);
+    end
 
+    m=floor(REF_LON/D_lon)+floor(1/2+((REF_LON-D_lon*floor(REF_LON/D_lon))/D_lon-LON/power(2,17)));
 
+    longitude=D_lon*(m+LON/power(2,17));
+    registre.longitude=longitude;
 
+end
 
+%Airbone Position
+if format_type_code > 8 && format_type_code < 23
+        %Décodage de l'altitude
+    ra=donnee(9:20);
+    ra(8)=[];
+    alt=bin2dec(num2str(ra));
+    altitude=25*alt-1000;
+    registre.altitude=altitude;
 
-
+    registre.timeFlag=bin2dec(regexprep(num2str(donnee(21)),'[^\w'']',''));
+    registre.cprFlag=bin2dec(regexprep(num2str(donnee(22)),'[^\w'']',''));
     
-        
-
-  
+        %Décodage de la latitude
+    LAT=bin2dec(num2str(donnee(23:39)));
     
+    
+    D_lat=360/(4*15-registre.cprFlag);
+    
+    j=floor(REF_LAT/D_lat)+floor(1/2+(REF_LAT-D_lat*floor(REF_LAT/D_lat))/D_lat-LAT/power(2,17));
    
+    latitude=D_lat*(j+LAT/power(2,17));
+    
+    
+    registre.latitude=latitude;
 
-
-
-
-            
+        %Décodage de la longitude
+    LON=bin2dec(num2str(donnee(40:56)));
    
-    
-    
-    
+    N_l=cprNL(latitude);
+    %N_l=floor(360*power(acos(1-(1-cos(pi/(2*15)))/power(cos((pi/180)*abs(latitude)),2)),-1));
+    if N_l-registre.cprFlag==0
+        D_lon=360;
+    else 
+        D_lon=360/(N_l-registre.cprFlag);
+    end
 
+    m=floor(REF_LON/D_lon)+floor(1/2+((REF_LON-D_lon*floor(REF_LON/D_lon))/D_lon-LON/power(2,17)));
 
+    longitude=D_lon*(m+LON/power(2,17));
+    registre.longitude=longitude;
 
-
-
-
-
-
-
-
-
-
-
+end

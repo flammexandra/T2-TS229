@@ -51,7 +51,7 @@ for i = 1:length(eb_n0)
             
         end
         
-        S_l=S_l;
+        S_l=0.5+S_l;
         E=mean(abs(S_l).^2);
         sigma2=E*Fse/eb_n0(i);
         %% Canal
